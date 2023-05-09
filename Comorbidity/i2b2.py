@@ -1,9 +1,18 @@
 #!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
 
 import sys
 sys.dont_write_bytecode = True
 import xml.etree.ElementTree as et
 import os.path, glob
+
+
+# can be used to turn this into a binary task
+LABEL2INT = {'Y':0, 'N':1, 'Q':2, 'U':3}
+
 
 def parse_standoff(pattern, disease, task):
   """Make patient to class mappings for multiple files"""
@@ -11,11 +20,15 @@ def parse_standoff(pattern, disease, task):
   doc2label = {} # key: doc id, value: label
 
   for xml_file in sorted(glob.glob(pattern)):
-    print 'loading annotations from', xml_file
+    print ('loading annotations from', xml_file)
     d2l = parse_standoff_file(xml_file, disease, task)
     doc2label.update(d2l)
 
   return doc2label
+
+
+# In[3]:
+
 
 def parse_standoff_file(xml, disease, task):
   """Make patient to class mapping"""
@@ -33,6 +46,10 @@ def parse_standoff_file(xml, disease, task):
             doc2label[id] = label
 
   return doc2label
+
+
+# In[4]:
+
 
 def parse_standoff_vectorized(xml, task, exclude=set()):
   """Map each patient to a vector of labels"""
@@ -59,9 +76,13 @@ def parse_standoff_vectorized(xml, task, exclude=set()):
             doc2labels[id] = [0] * len(dis2int)
 
           disease_label = doc_elem.attrib['judgment']
-          doc2labels[id][disease_index] = to_int[disease_label]
+          doc2labels[id][disease_index] = LABEL2INT[disease_label]
 
   return doc2labels
+
+
+# In[5]:
+
 
 def get_disease_names(xml, exclude=set()):
   """Get list of diseases from standoff files"""
@@ -89,14 +110,25 @@ def write_notes_to_files(notes_xml, output_dir):
     out_file = open(file_name, 'w')
     out_file.write(doc_text)
 
+
+# In[6]:
+
+
 if __name__ == "__main__":
 
-  base = '/Users/Dima/Loyola/Data/'
-  notes = 'Comorbidity/Xml/obesity_patient_records_test.xml'
-  xml = 'Comorbidity/Xml/obesity_standoff_annotations_test.xml'
+  base = '/Users/jasonpeng/documents/representation/'
+  notes = 'Comorbidity/obesity_patient_records_test.xml'
+  xml = 'Comorbidity/obesity_standoff_annotations_test.xml'
   outdir = 'Comorbidity/Text/Test/'
 
   annot_xml = os.path.join(base, xml)
 
   doc2labels = parse_standoff_vectorized(annot_xml, 'intuitive')
-  print doc2labels
+  print (doc2labels)
+
+
+# In[ ]:
+
+
+
+
