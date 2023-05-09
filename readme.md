@@ -3,6 +3,8 @@
 
 * Obtain access and data from [MIMIC3] (https://physionet.org/content/mimiciii/1.4/) dataset, [i2b2 Obesity Challenge] (https://www.i2b2.org/NLP/Obesity/Main.php) NLP dataset, and [UMLS] (https://www.nlm.nih.gov/research/umls/index.html). Please do this now if you are not pre-approved for access.
 
+# Libraries to Install
+* You will need to install https://github.com/Georgetown-IR-Lab/QuickUMLS. Please follow the instructions in that github readme.md as I am not using cTAKES for CUI extraction here. 
 
 # Extract CUIs from MIMIC III patient data
 
