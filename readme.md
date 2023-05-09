@@ -21,7 +21,7 @@
 * For Dense, Please ensure that the maxlen is adjusted in the dense.cfg before you ran. If you don't know the number, simply set it to a random integer and run one time and observe what is the expected number.
 
 # Sample Result
-* A sample result can be found in the following diagram. You should be getting this number if you are running with the correct data:
+* A sample sparse result can be found in the following diagram. You should be getting this number if you are running with the correct data:
 
 
 | Disease                |   p   |   r   |   f1   |
