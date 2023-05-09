@@ -20,4 +20,24 @@
 * cd into Comorbidity directory, and run svm.py sparse.cfg.  For dense, please run svm.py dense.cfg. 
 * For Dense, Please ensure that the maxlen is adjusted in the dense.cfg before you ran. If you don't know the number, simply set it to a random integer and run one time and observe what is the expected number.
 
+# Sample Result
+* A sample result can be found in the following diagram. You should be getting this number if you are running with the correct data:
+Disease	p	r	f1
+Asthma	0.837	0.702	0.745
+CAD	0.556	0.554	0.555
+CHF	0.73	0.675	0.694
+Diabetes	0.83	0.8	0.812
+GERD	0.566	0.453	0.477
+Gallstones	0.602	0.544	0.548
+Gout	0.905	0.693	0.751
+Hypercholesterolemia	0.771	0.772	0.772
+Hypertriglyceridemia	0.896	0.599	0.65
+OA	0.511	0.421	0.438
+OSA	0.523	0.437	0.461
+Obesity	0.727	0.72	0.722
+PVD	0.629	0.532	0.567
+Venous Insufficiency	0.67	0.561	0.584
 
+average p = 0.7018965898681864
+average r = 0.6121794955408493
+average f1 = 0.6343698598121216
