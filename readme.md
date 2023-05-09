@@ -22,6 +22,8 @@
 
 # Sample Result
 * A sample result can be found in the following diagram. You should be getting this number if you are running with the correct data:
+
+
 | Disease                |   p   |   r   |   f1   |
 |------------------------|-------|-------|--------|
 | Asthma                 | 0.837 | 0.702 | 0.745  |
