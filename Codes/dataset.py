@@ -1,9 +1,27 @@
 #!/usr/bin/env python
+# coding: utf-8
+
+# In[15]:
+
 
 import numpy
-import ConfigParser, os, nltk, pandas, sys
+
+
+# In[16]:
+
+
+import configparser, os, nltk, pandas, sys
+
+
+# In[17]:
+
+
 sys.dont_write_bytecode = True
 import glob, string, collections, operator, pickle
+
+
+# In[18]:
+
 
 ALPHABET_FILE = 'Model/alphabet.txt'
 ALPHABET_PICKLE = 'Model/alphabet.p'
@@ -11,6 +29,10 @@ CODE_FREQ_FILE = 'Model/codes.txt'
 DIAG_ICD9_FILE = 'DIAGNOSES_ICD.csv'
 PROC_ICD9_FILE = 'PROCEDURES_ICD.csv'
 CPT_CODE_FILE = 'CPTEVENTS.csv'
+
+
+# In[19]:
+
 
 class DatasetProvider:
   """THYME relation data"""
@@ -37,11 +59,12 @@ class DatasetProvider:
 
     # making token alphabet is expensive so do it once
     if not os.path.isfile(ALPHABET_PICKLE):
-      print 'making alphabet and dumping it to file...'
+      print ('making alphabet and dumping it to file...')
       self.make_and_write_token_alphabet()
-    print 'retrieving alphabet from file...'
+    print ('retrieving alphabet from file...')
     self.token2int = pickle.load(open(ALPHABET_PICKLE, 'rb'))
-    print 'mapping codes...'
+    #print(self.token2int)
+    print ('mapping codes...')
     diag_code_file = os.path.join(self.code_dir, DIAG_ICD9_FILE)
     proc_code_file = os.path.join(self.code_dir, PROC_ICD9_FILE)
     cpt_code_file = os.path.join(self.code_dir, CPT_CODE_FILE)
@@ -50,48 +73,21 @@ class DatasetProvider:
     self.map_subjects_to_codes(cpt_code_file, 'CPT_NUMBER', 'cpt', 5)
     self.make_code_alphabet()
 
-  def read_tokens(self, file_name):
-    """Return file as a list of ngrams"""
-
-    infile = os.path.join(self.corpus_path, file_name)
-    text = open(infile).read().lower()
-
-    tokens = [] # file as a list of tokens
-    for token in text.split():
-      if token.isalpha(): # TODO: need numeric tokens?
-        tokens.append(token)
-
-    if len(tokens) > self.max_tokens_in_file:
-      return None
-
-    return tokens
-
-  def read_cuis(self, file_name):
-    """Return file as a list of CUIs"""
-
-    infile = os.path.join(self.corpus_path, file_name)
-    text = open(infile).read() # no lowercasing!
-    tokens = [token for token in text.split()]
-    if len(tokens) > self.max_tokens_in_file:
-      return None
-
-    return tokens
 
   def make_and_write_token_alphabet(self):
     """Write unique corpus tokens to file"""
 
     # count tokens in the entire corpus
     token_counts = collections.Counter()
+    #print(os.listdir(self.corpus_path))
     for file in os.listdir(self.corpus_path):
+      #print(file)
       file_ngram_list = None
       if self.use_cuis:
         file_ngram_list = self.read_cuis(file)
-      else:
-        file_ngram_list = self.read_tokens(file)
       if file_ngram_list == None:
         continue
       token_counts.update(file_ngram_list)
-
     # now make alphabet
     # and save it in a file for debugging
     index = 1
@@ -107,6 +103,7 @@ class DatasetProvider:
     pickle_file = open(ALPHABET_PICKLE, 'wb')
     pickle.dump(self.token2int, pickle_file)
 
+
   def map_subjects_to_codes(self,
                             code_file,
                             code_col,
@@ -121,12 +118,27 @@ class DatasetProvider:
         self.subj2codes[subj_id] = set()
       short_code = '%s_%s' % (prefix, str(code)[0:num_digits])
       self.subj2codes[subj_id].add(short_code)
+        
+  def read_cuis(self, file_name):
+    """Return file as a list of CUIs"""
+
+    infile = os.path.join(self.corpus_path, file_name)
+    #print(infile)
+    text = open(infile).read() # no lowercasing!
+    tokens = [token for token in text.split()]
+    if len(tokens) > self.max_tokens_in_file:
+      return None
+    #print(tokens)
+
+    return tokens
+
 
   def make_code_alphabet(self):
     """Map codes to integers"""
 
     # count code frequencies and write them to file
     code_counter = collections.Counter()
+    
     for codes in self.subj2codes.values():
       code_counter.update(codes)
     outfile = open(CODE_FREQ_FILE, 'w')
@@ -139,6 +151,9 @@ class DatasetProvider:
       if count > self.min_examples_per_code:
         self.code2int[code] = index
         index = index + 1
+        
+    #print(code_counter)
+    
 
   def load(self,
            maxlen=float('inf'),
@@ -147,20 +162,23 @@ class DatasetProvider:
 
     codes = []    # each example has multiple codes
     examples = [] # int sequence represents each example
-
+    
     for file in os.listdir(self.corpus_path):
       file_ngram_list = None
+      #print(file)
       if self.use_cuis == True:
         file_ngram_list = self.read_cuis(file)
       else:
         file_ngram_list = self.read_tokens(file)
       if file_ngram_list == None:
         continue # file too long
-
+      #print(file_ngram_list)
+      
       # make code vector for this example
       subj_id = int(file.split('.')[0])
+      #print(subj_id)
       if len(self.subj2codes[subj_id]) == 0:
-        print 'skipping file:', file
+        print ('skipping file:', file)
         continue # no codes for this file
 
       code_vec = [0] * len(self.code2int)
@@ -193,14 +211,32 @@ class DatasetProvider:
 
     return examples, codes
 
+def print_config(cfg):
+  """Print configuration settings"""
+
+  print ('train:', cfg.get('data', 'train'))
+  if cfg.has_option('data', 'embed'):
+    print ('embeddings:', cfg.get('data', 'embed'))
+  print ('test_size', cfg.getfloat('args', 'test_size'))
+  print ('batch:', cfg.get('dan', 'batch'))
+  print ('epochs:', cfg.get('dan', 'epochs'))
+  print ('embdims:', cfg.get('dan', 'embdims'))
+  print ('hidden:', cfg.get('dan', 'hidden'))
+  print ('learnrt:', cfg.get('dan', 'learnrt'))
+
+
+# In[20]:
+
+
 if __name__ == "__main__":
 
-  cfg = ConfigParser.ConfigParser()
-  cfg.read(sys.argv[1])
-  base = os.environ['DATA_ROOT']
+  cfg = configparser.ConfigParser()
+  cfg.read('cuis.cfg')
+  #print_config(cfg)
+  base = '/Users/jasonpeng/documents/representation'
   train_dir = os.path.join(base, cfg.get('data', 'train'))
   code_file = os.path.join(base, cfg.get('data', 'codes'))
-
+  #print(train_dir)
   dataset = DatasetProvider(
     train_dir,
     code_file,
@@ -208,3 +244,20 @@ if __name__ == "__main__":
     cfg.getint('args', 'max_tokens_in_file'),
     cfg.getint('args', 'min_examples_per_code'))
   x, y = dataset.load()
+  print(x, y)
+  
+  
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
