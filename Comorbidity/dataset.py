@@ -5,13 +5,13 @@ sys.dont_write_bytecode = True
 sys.path.append('../Lib/')
 import utils, i2b2
 import numpy, pickle
-import ConfigParser, os, nltk, pandas
+import configparser, os, nltk, pandas
 import glob, string, collections, operator
 
 # can be used to turn this into a binary task
 LABEL2INT = {'Y':0, 'N':1, 'Q':2, 'U':3}
 # file to log alphabet entries for debugging
-ALPHABET_FILE = 'Model/alphabet.txt'
+ALPHABET_FILE = '../Codes/Model/alphabet.txt'
 
 class DatasetProvider:
   """Comorboditiy data loader"""
@@ -38,7 +38,7 @@ class DatasetProvider:
     # when training, make alphabet and pickle it
     # when testing, load it from pickle
     if use_pickled_alphabet:
-      print 'reading alphabet from', alphabet_pickle
+      print ('reading alphabet from', alphabet_pickle)
       pkl = open(alphabet_pickle, 'rb')
       self.token2int = pickle.load(pkl)
     else:
@@ -108,9 +108,9 @@ class DatasetProvider:
       else:
         no_labels.append(doc_id)
 
-    print '%d documents with no labels for %s/%s in %s' \
+    print ('%d documents with no labels for %s/%s in %s' \
       % (len(no_labels), self.disease,
-         self.judgement, self.annot_xml.split('/')[-1])
+         self.judgement, self.annot_xml.split('/')[-1]))
     return examples, labels
 
   def load_vectorized(self, exclude, maxlen=float('inf')):
@@ -151,9 +151,9 @@ class DatasetProvider:
       else:
         no_labels.append(doc_id)
 
-    print '%d documents with no labels for %s/%s in %s' \
+    print ('%d documents with no labels for %s/%s in %s' \
       % (len(no_labels), self.disease,
-         self.judgement, self.annot_xml.split('/')[-1])
+         self.judgement, self.annot_xml.split('/')[-1]))
     return examples, labels
 
   def load_raw(self):
@@ -183,21 +183,35 @@ class DatasetProvider:
       else:
         no_labels.append(doc_id)
 
-    print '%d documents with no labels for %s/%s in %s' \
+    print ('%d documents with no labels for %s/%s in %s' \
       % (len(no_labels), self.disease,
-         self.judgement, self.annot_xml.split('/')[-1])
+         self.judgement, self.annot_xml.split('/')[-1]))
     return examples, labels
 
 if __name__ == "__main__":
 
-  cfg = ConfigParser.ConfigParser()
-  cfg.read(sys.argv[1])
-  base = os.environ['DATA_ROOT']
+  cfg = configparser.ConfigParser()
+  cfg.read('sparse.cfg')
+  base = '/Users/jasonpeng/documents/representation'
   data_dir = os.path.join(base, cfg.get('data', 'train_data'))
   annot_xml = os.path.join(base, cfg.get('data', 'train_annot'))
+  print(data_dir)
+  print(annot_xml)
+  xml = 'obesity_standoff_annotations_training.xml'
+  diseases = i2b2.get_disease_names(xml, exclude=set())
 
-  dataset = DatasetProvider(data_dir, annot_xml)
-  exclude = set(['GERD', 'Venous Insufficiency', 'CHF'])
-  x, y = dataset.load_vectorized(exclude)
-  print x
-  print y
+  judgement = cfg.get('data', 'judgement')
+  print(judgement)
+  diseases = i2b2.get_disease_names(xml, exclude=set())
+  alphabet_pickle = os.path.join(base, cfg.get('data', 'alphabet_pickle'))
+  print(alphabet_pickle)
+  for disease in diseases:
+        print ('Disease is: ' + str(disease))
+        dataset = DatasetProvider(data_dir, annot_xml, disease, judgement, use_pickled_alphabet=True,
+               alphabet_pickle=alphabet_pickle)
+        exclude = set(['GERD', 'Venous Insufficiency', 'CHF'])
+        x, y = dataset.load_vectorized(exclude)
+        #print (x)
+        #print ('\n')
+        #print (y)
+
